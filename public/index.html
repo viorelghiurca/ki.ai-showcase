@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google GenAI Showcase</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/lucide.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 50%, #4a5568 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #f7fafc;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(45, 55, 72, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(113, 128, 150, 0.3);
+        }
+        
+        h1 {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #cbd5e0, #e2e8f0, #f7fafc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+        
+        .tab-container {
+            margin-bottom: 40px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            background: #2d3748;
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 32px;
+            gap: 4px;
+            border: 1px solid #4a5568;
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #a0aec0;
+        }
+        
+        .tab-button.active {
+            background: linear-gradient(135deg, #4a5568, #718096);
+            color: #f7fafc;
+            box-shadow: 0 4px 15px rgba(74, 85, 104, 0.5);
+            transform: translateY(-1px);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 17px;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #4a5568;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: #2d3748;
+            color: #f7fafc;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #718096;
+            background: #1a202c;
+            box-shadow: 0 0 0 4px rgba(113, 128, 150, 0.15);
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-display {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border: 2px dashed #4a5568;
+            border-radius: 12px;
+            background: #2d3748;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+        
+        .file-input-display:hover {
+            border-color: #718096;
+            background: #1a202c;
+        }
+        
+        .file-input-display.has-file {
+            border-style: solid;
+            border-color: #718096;
+            background: #1a202c;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            color: #f7fafc;
+            padding: 16px 32px;
+            border: 1px solid #718096;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(74, 85, 104, 0.6);
+            background: linear-gradient(135deg, #718096, #4a5568);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #d1d1d6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .response {
+            margin-top: 32px;
+            padding: 24px;
+            background: #1a202c;
+            border-radius: 16px;
+            white-space: pre-wrap;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid #4a5568;
+            animation: slideUp 0.5s ease-out;
+            color: #e2e8f0;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .error {
+            background: #2d1b1b;
+            border-color: #e53e3e;
+            color: #feb2b2;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #86868b;
+            font-size: 17px;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-radius: 50%;
+            border-top-color: #cbd5e0;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 0 10px;
+                padding: 24px;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .tab-button {
+                padding: 16px;
+            }
+        }
+        
+        /* Add styles for the format toggle */
+        .format-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            justify-content: flex-end;
+            font-size: 12px;
+        }
+
+        .format-toggle label {
+            margin: 0;
+            font-size: 12px;
+            color: #a0aec0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 18px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            transition: .4s;
+            border-radius: 18px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 12px;
+            width: 12px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, #718096, #a0aec0);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(18px);
+        }
+
+        .format-label {
+            font-weight: 500;
+            color: #cbd5e0;
+        }
+
+        /* API Selector Styles */
+        .api-selector {
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(26, 32, 44, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(113, 128, 150, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .api-selector label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #e2e8f0;
+            font-size: 17px;
+        }
+
+        .api-selector select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #4a5568;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: #2d3748;
+            color: #f7fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .api-selector select:focus {
+            outline: none;
+            border-color: #718096;
+            box-shadow: 0 0 0 4px rgba(113, 128, 150, 0.15);
+        }
+
+        .api-selector select:hover {
+            border-color: #718096;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Showcase</h1>
+        
+        <div class="api-selector">
+            <label for="api-provider">
+                <i data-lucide="settings" class="icon" style="display: inline; margin-right: 8px;"></i>
+                API Provider wählen
+            </label>
+            <select id="api-provider">
+                <option value="google">Google Gemini 2.0</option>
+                <option value="openai">OpenAI GPT-4o</option>
+                <option value="deepseek">DeepSeek Chat</option>
+            </select>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('text')">
+                    <i data-lucide="type" class="icon"></i>
+                    Text
+                </button>
+                <button class="tab-button" onclick="switchTab('image')">
+                    <i data-lucide="image" class="icon"></i>
+                    Bild
+                </button>
+                <button class="tab-button" onclick="switchTab('pdf')">
+                    <i data-lucide="file-text" class="icon"></i>
+                    PDF
+                </button>
+            </div>
+            
+            <div id="text-tab" class="tab-content active">
+                <form onsubmit="submitText(event)">
+                    <div class="form-group">
+                        <label for="text-input">
+                            <i data-lucide="message-square" class="icon" style="display: inline; margin-right: 8px;"></i>
+                            Text eingeben
+                        </label>
+                        <textarea id="text-input" placeholder="Geben Sie Ihren Text hier ein..." required></textarea>
+                    </div>
+                    <button type="submit">
+                        <i data-lucide="sparkles" class="icon" style="display: inline; margin-right: 8px;"></i>
+                        Analysieren
+                    </button>
+                </form>
+            </div>
+            
+            <div id="image-tab" class="tab-content">
+                <form onsubmit="submitImage(event)">
+                    <div class="form-group">
+                        <label for="image-file">
+                            <i data-lucide="upload" class="icon" style="display: inline; margin-right: 8px;"></i>
+                            Bild auswählen
+                        </label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="image-file" accept="image/*" required onchange="updateFileDisplay(this, 'image-display')">
+                            <div class="file-input-display" id="image-display">
+                                <i data-lucide="image-plus" class="icon"></i>
+                                <span>Klicken Sie hier oder ziehen Sie ein Bild hierher</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="image-question">
+                            <i data-lucide="help-circle" class="icon" style="display: inline; margin-right: 8px;"></i>
+                            Frage (optional)
+                        </label>
+                        <input type="text" id="image-question" placeholder="Was siehst du in diesem Bild?">
+                    </div>
+                    <button type="submit">
+                        <i data-lucide="sparkles" class="icon" style="display: inline; margin-right: 8px;"></i>
+                        Analysieren
+                    </button>
+                </form>
+            </div>
+            
+            <div id="pdf-tab" class="tab-content">
+                <form onsubmit="submitPDF(event)">
+                    <div class="form-group">
+                        <label for="pdf-file">
+                            <i data-lucide="upload" class="icon" style="display: inline; margin-right: 8px;"></i>
+                            PDF auswählen
+                        </label>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="pdf-file" accept=".pdf" required onchange="updateFileDisplay(this, 'pdf-display')">
+                            <div class="file-input-display" id="pdf-display">
+                                <i data-lucide="file-plus" class="icon"></i>
+                                <span>Klicken Sie hier oder ziehen Sie eine PDF hierher</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pdf-question">
+                            <i data-lucide="help-circle" class="icon" style="display: inline; margin-right: 8px;"></i>
+                            Frage (optional)
+                        </label>
+                        <input type="text" id="pdf-question" placeholder="Was siehst du in diesem PDF?">
+                    </div>
+                    <button type="submit">
+                        <i data-lucide="sparkles" class="icon" style="display: inline; margin-right: 8px;"></i>
+                        Analysieren
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="response-container"></div>
+        <div class="format-toggle" id="format-toggle-container" style="display:none">
+            <label class="format-label">JSON</label>
+            <label class="switch">
+                <input type="checkbox" id="format-toggle" onchange="toggleFormat()">
+                <span class="slider"></span>
+            </label>
+            <label class="format-label">Plain Text</label>
+        </div>
+    </div>
+
+    <script>
+        // Store the original response data for format switching
+        let originalResponseData = null;
+        let isCurrentResponseError = false;
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            // Don't clear response when switching tabs - preserve the response and toggle state
+            // clearResponse();
+        }
+
+        function updateFileDisplay(input, displayId) {
+            const display = document.getElementById(displayId);
+            const file = input.files[0];
+            
+            if (file) {
+                display.classList.add('has-file');
+                const icon = display.querySelector('i');
+                const span = display.querySelector('span');
+                
+                if (file.type.startsWith('image/')) {
+                    icon.setAttribute('data-lucide', 'image-check');
+                } else if (file.type === 'application/pdf') {
+                    icon.setAttribute('data-lucide', 'file-check');
+                }
+                
+                span.textContent = `Ausgewählt: ${file.name}`;
+                lucide.createIcons();
+            } else {
+                display.classList.remove('has-file');
+            }
+        }
+
+        function showLoading() {
+            const responseContainer = document.getElementById('response-container');
+            responseContainer.innerHTML = '<div class="loading"><div class="spinner"></div>Verarbeitung läuft...</div>';
+        }
+
+        function showResponse(response, isError = false) {
+            const responseContainer = document.getElementById('response-container');
+            const responseDiv = document.createElement('div');
+            responseDiv.className = `response ${isError ? 'error' : ''}`;
+
+            // Store the original response data for format switching
+            originalResponseData = response;
+            isCurrentResponseError = isError;
+
+            // Show the format toggle only if there is a response
+            document.getElementById('format-toggle-container').style.display = 'flex';
+
+            const isJsonFormat = !document.getElementById('format-toggle').checked;
+
+            if (isJsonFormat) {
+                try {
+                    // Try to parse and format JSON if it's a valid JSON string
+                    const jsonObj = JSON.parse(response);
+                    responseDiv.textContent = JSON.stringify(jsonObj, null, 2);
+                } catch (e) {
+                    // If not valid JSON, display as is
+                    responseDiv.textContent = response;
+                }
+            } else {
+                // For plain text, try to extract meaningful content
+                let plainText = '';
+                
+                try {
+                    const jsonObj = JSON.parse(response);
+                    
+                    if (Array.isArray(jsonObj)) {
+                        // If it's an array, extract text from objects
+                        jsonObj.forEach(item => {
+                            if (typeof item === 'string') {
+                                plainText += item + '\n';
+                            } else if (typeof item === 'object' && item !== null) {
+                                // Extract description or other text fields from objects
+                                plainText += (item.description || item.content || item.text || item.summary || item.scene || '') + '\n';
+                            }
+                        });
+                    } else if (typeof jsonObj === 'object' && jsonObj !== null) {
+                        // If it's an object, try different field names and fallback strategies
+                        plainText = jsonObj.scene || 
+                                   jsonObj.summary || 
+                                   jsonObj.response || 
+                                   jsonObj.content || 
+                                   jsonObj.text || 
+                                   jsonObj.description || 
+                                   jsonObj.answer ||
+                                   // If none of the expected fields exist, extract all string values
+                                   Object.values(jsonObj).filter(val => typeof val === 'string').join('\n') ||
+                                   // Last resort: stringify the object
+                                   JSON.stringify(jsonObj, null, 2);
+                    } else {
+                        // If it's a primitive value
+                        plainText = String(jsonObj);
+                    }
+                } catch (e) {
+                    // If not valid JSON, check if it's a JSON-like string that needs cleaning
+                    let cleanedResponse = response.trim();
+                    
+                    // Try to extract content from markdown-style JSON blocks
+                    const jsonBlockMatch = cleanedResponse.match(/```json\s*\n([\s\S]*?)\n```/);
+                    if (jsonBlockMatch) {
+                        try {
+                            const jsonObj = JSON.parse(jsonBlockMatch[1]);
+                            plainText = extractPlainTextFromObject(jsonObj);
+                        } catch (innerE) {
+                            plainText = cleanedResponse;
+                        }
+                    } else {
+                        // Just use the raw response
+                        plainText = cleanedResponse;
+                    }
+                }
+                
+                responseDiv.textContent = plainText.trim() || response;
+            }
+
+            responseContainer.innerHTML = '';
+            responseContainer.appendChild(responseDiv);
+        }
+
+        // Helper function to extract plain text from any object structure
+        function extractPlainTextFromObject(obj) {
+            if (typeof obj === 'string') {
+                return obj;
+            } else if (Array.isArray(obj)) {
+                return obj.map(item => extractPlainTextFromObject(item)).filter(text => text).join('\n');
+            } else if (typeof obj === 'object' && obj !== null) {
+                // Try common field names first
+                const commonFields = ['scene', 'summary', 'response', 'content', 'text', 'description', 'answer', 'message'];
+                for (const field of commonFields) {
+                    if (obj[field] && typeof obj[field] === 'string') {
+                        return obj[field];
+                    }
+                }
+                // If no common field found, extract all string values
+                const stringValues = Object.values(obj).filter(val => typeof val === 'string');
+                return stringValues.join('\n') || JSON.stringify(obj, null, 2);
+            }
+            return String(obj);
+        }
+
+        function toggleFormat() {
+            // Re-display the response with the new format using the original response data
+            if (originalResponseData) {
+                showResponse(originalResponseData, isCurrentResponseError);
+            }
+        }
+
+        function clearResponse() {
+            document.getElementById('response-container').innerHTML = '';
+            document.getElementById('format-toggle-container').style.display = 'none';
+            originalResponseData = null;
+            isCurrentResponseError = false;
+        }
+
+        async function submitText(event) {
+            event.preventDefault();
+            
+            const text = document.getElementById('text-input').value;
+            const provider = document.getElementById('api-provider').value;
+            const submitButton = event.target.querySelector('button');
+            
+            submitButton.disabled = true;
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text, provider }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data.response);
+                } else {
+                    showResponse(data.error || 'Ein Fehler ist aufgetreten', true);
+                }
+            } catch (error) {
+                showResponse('Netzwerkfehler: ' + error.message, true);
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        async function submitImage(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('image-file');
+            const question = document.getElementById('image-question').value;
+            const provider = document.getElementById('api-provider').value;
+            const submitButton = event.target.querySelector('button');
+            
+            if (!fileInput.files[0]) {
+                showResponse('Bitte wählen Sie eine Bilddatei aus', true);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
+            if (question) formData.append('question', question);
+            formData.append('provider', provider);
+            
+            submitButton.disabled = true;
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/image', {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data.response);
+                } else {
+                    showResponse(data.error || 'Ein Fehler ist aufgetreten', true);
+                }
+            } catch (error) {
+                showResponse('Netzwerkfehler: ' + error.message, true);
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        async function submitPDF(event) {
+            event.preventDefault();
+            
+            const fileInput = document.getElementById('pdf-file');
+            const question = document.getElementById('pdf-question').value;
+            const provider = document.getElementById('api-provider').value;
+            const submitButton = event.target.querySelector('button');
+            
+            if (!fileInput.files[0]) {
+                showResponse('Bitte wählen Sie eine PDF-Datei aus', true);
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('pdf', fileInput.files[0]);
+            if (question) formData.append('question', question);
+            formData.append('provider', provider);
+            
+            submitButton.disabled = true;
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/pdf', {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data.response);
+                } else {
+                    showResponse(data.error || 'Ein Fehler ist aufgetreten', true);
+                }
+            } catch (error) {
+                showResponse('Netzwerkfehler: ' + error.message, true);
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+        
+        // Initialize Lucide icons when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
